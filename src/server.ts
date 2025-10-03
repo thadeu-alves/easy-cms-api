@@ -1,5 +1,5 @@
 import Fastify from "fastify";
-import Home from "./routes/home";
+import Projects from "./routes/projects";
 import {
     jsonSchemaTransform,
     serializerCompiler,
@@ -8,10 +8,17 @@ import {
 } from "fastify-type-provider-zod";
 import fastifySwagger from "@fastify/swagger";
 import fastifySwaggerUi from "@fastify/swagger-ui";
+import fastifyCors from "@fastify/cors";
 
 const app = Fastify({
     logger: true,
 }).withTypeProvider<ZodTypeProvider>();
+
+app.register(fastifyCors, {
+    origin: true,
+    methods: ["GET", "PUT", "PATCH", "POST", "DELETE"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+});
 
 app.setValidatorCompiler(validatorCompiler);
 app.setSerializerCompiler(serializerCompiler);
@@ -31,7 +38,7 @@ app.register(fastifySwaggerUi, {
     routePrefix: "/docs",
 });
 
-app.register(Home);
+app.register(Projects);
 
 export default async (req: any, res: any) => {
     try {

@@ -1,9 +1,25 @@
 generator client {
   provider = "prisma-client-js"
-  output   = "../src/generated/prisma"
 }
 
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+}
+
+model Project{
+    id            String       @id @default(uuid())
+    name          String
+    slug          String    @unique
+
+    title         String?
+    description   String?
+    featuredImage String?   @map("featured_image")
+
+    fields        Json?
+
+    createdAt     DateTime  @default(now()) @map("created_at")
+    updatedAt     DateTime  @updatedAt @map("updated_at")
+
+    @@map("projects")
 }
