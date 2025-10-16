@@ -2,12 +2,16 @@ import { FastifyInstance } from "fastify";
 import { object, z } from "zod";
 import { prisma } from "../../lib/prisma";
 import { InputJsonObject } from "@prisma/client/runtime/library";
+import {
+    ProjectProps,
+    ProjectSchema,
+} from "../types/project";
 
 export default async function Projects(
     app: FastifyInstance,
 ) {
     app.get(
-        "/:id",
+        "/projects/:id",
         {
             schema: {
                 params: z.object({
@@ -58,7 +62,7 @@ export default async function Projects(
     );
 
     app.post(
-        "/:id",
+        "/projects/:id",
         {
             schema: {
                 params: z.object({
@@ -113,6 +117,66 @@ export default async function Projects(
                     });
 
                 return reply.send({ data: updatedData });
+            } catch (err) {
+                console.log(err);
+                if (err instanceof Error) {
+                    return reply.status(400).send({
+                        message: err.message,
+                    });
+                }
+
+                return reply.status(500).send({
+                    message: "Internal Server Error",
+                });
+            }
+        },
+    );
+
+    app.post(
+        "/projects",
+        {
+            schema: {
+                body: ProjectSchema,
+                response: {
+                    400: z.object({
+                        message: z.string(),
+                    }),
+                    500: z.object({
+                        message: z.string(),
+                    }),
+                },
+            },
+        },
+        async (request, reply) => {
+            try {
+                const {
+                    name,
+                    slug,
+                    title,
+                    description,
+                    featuredImage,
+                    fields,
+                } = request.body as ProjectProps;
+
+                const data = await prisma.project.create({
+                    data: {
+                        name,
+                        slug,
+                        title: title || null,
+                        description: description || null,
+                        featuredImage:
+                            featuredImage || null,
+                        fields: fields || {},
+                    },
+                });
+
+                if (!data) {
+                    throw new Error(
+                        "Impossible to create Project",
+                    );
+                }
+
+                return reply.send({ data });
             } catch (err) {
                 console.log(err);
                 if (err instanceof Error) {
