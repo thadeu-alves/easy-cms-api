@@ -58,7 +58,7 @@ if (require.main === module) {
                 host: "0.0.0.0",
             });
             console.log(
-                "Server listening on http://localhost:3000"
+                "Server listening on http://localhost:3000",
             );
         } catch (err) {
             app.log.error(err);

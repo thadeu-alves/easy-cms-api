@@ -4,7 +4,7 @@ import { prisma } from "../../lib/prisma";
 import { InputJsonObject } from "@prisma/client/runtime/library";
 
 export default async function Projects(
-    app: FastifyInstance
+    app: FastifyInstance,
 ) {
     app.get(
         "/:id",
@@ -34,7 +34,7 @@ export default async function Projects(
                         where: {
                             id,
                         },
-                    }
+                    },
                 );
 
                 if (!data) {
@@ -54,7 +54,7 @@ export default async function Projects(
                     message: "Internal Server Error",
                 });
             }
-        }
+        },
     );
 
     app.post(
@@ -95,7 +95,7 @@ export default async function Projects(
                         where: {
                             id,
                         },
-                    }
+                    },
                 );
 
                 if (!data) {
@@ -125,6 +125,6 @@ export default async function Projects(
                     message: "Internal Server Error",
                 });
             }
-        }
+        },
     );
 }
