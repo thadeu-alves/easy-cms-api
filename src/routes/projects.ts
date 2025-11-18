@@ -11,6 +11,41 @@ export default async function Projects(
     app: FastifyInstance,
 ) {
     app.get(
+        "/projects",
+        {
+            schema: {
+                response: {
+                    400: z.object({
+                        message: z.string(),
+                    }),
+                    500: z.object({
+                        message: z.string(),
+                    }),
+                },
+            },
+        },
+        async (request, reply) => {
+            try {
+                const data =
+                    await prisma.project.findMany();
+
+                return reply.send({ data });
+            } catch (err) {
+                console.log(err);
+                if (err instanceof Error) {
+                    return reply.status(400).send({
+                        message: err.message,
+                    });
+                }
+
+                return reply.status(500).send({
+                    message: "Internal Server Error",
+                });
+            }
+        },
+    );
+
+    app.get(
         "/projects/:id",
         {
             schema: {
@@ -43,6 +78,66 @@ export default async function Projects(
 
                 if (!data) {
                     throw new Error("Project not found");
+                }
+
+                return reply.send({ data });
+            } catch (err) {
+                console.log(err);
+                if (err instanceof Error) {
+                    return reply.status(400).send({
+                        message: err.message,
+                    });
+                }
+
+                return reply.status(500).send({
+                    message: "Internal Server Error",
+                });
+            }
+        },
+    );
+
+    app.post(
+        "/projects",
+        {
+            schema: {
+                body: ProjectSchema,
+                response: {
+                    400: z.object({
+                        message: z.string(),
+                    }),
+                    500: z.object({
+                        message: z.string(),
+                    }),
+                },
+            },
+        },
+        async (request, reply) => {
+            try {
+                const {
+                    name,
+                    slug,
+                    title,
+                    description,
+                    featuredImage,
+                    fields,
+                } = request.body as ProjectProps;
+
+                const data = await prisma.project.create({
+                    data: {
+                        name,
+                        slug,
+                        title: title || null,
+                        description: description || null,
+                        featuredImage:
+                            featuredImage || null,
+                        fields: fields || {},
+                    },
+                });
+
+                if (!data) {
+                    throw new Error(
+                        "Impossible to create Project",
+                    );
                 }
 
                 return reply.send({ data });
@@ -117,66 +212,6 @@ export default async function Projects(
                     });
 
                 return reply.send({ data: updatedData });
-            } catch (err) {
-                console.log(err);
-                if (err instanceof Error) {
-                    return reply.status(400).send({
-                        message: err.message,
-                    });
-                }
-
-                return reply.status(500).send({
-                    message: "Internal Server Error",
-                });
-            }
-        },
-    );
-
-    app.post(
-        "/projects",
-        {
-            schema: {
-                body: ProjectSchema,
-                response: {
-                    400: z.object({
-                        message: z.string(),
-                    }),
-                    500: z.object({
-                        message: z.string(),
-                    }),
-                },
-            },
-        },
-        async (request, reply) => {
-            try {
-                const {
-                    name,
-                    slug,
-                    title,
-                    description,
-                    featuredImage,
-                    fields,
-                } = request.body as ProjectProps;
-
-                const data = await prisma.project.create({
-                    data: {
-                        name,
-                        slug,
-                        title: title || null,
-                        description: description || null,
-                        featuredImage:
-                            featuredImage || null,
-                        fields: fields || {},
-                    },
-                });
-
-                if (!data) {
-                    throw new Error(
-                        "Impossible to create Project",
-                    );
-                }
-
-                return reply.send({ data });
             } catch (err) {
                 console.log(err);
                 if (err instanceof Error) {
