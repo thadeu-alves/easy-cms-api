@@ -15,7 +15,18 @@ const app = Fastify({
 }).withTypeProvider<ZodTypeProvider>();
 
 app.register(fastifyCors, {
-    origin: true,
+    origin: (origin, cb) => {
+        const hostname = new URL(origin || "").hostname;
+
+        console.log("Hostname call: ", hostname);
+
+        if (hostname === process.env.HOSTNAME_URL) {
+            cb(null, true);
+            return;
+        }
+
+        cb(new Error("Not allowed"), false);
+    },
     methods: ["GET", "PUT", "PATCH", "POST", "DELETE"],
     allowedHeaders: ["Content-Type", "Authorization"],
 });
