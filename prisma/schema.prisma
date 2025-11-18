@@ -23,3 +23,13 @@ model Project{
 
     @@map("projects")
 }
+
+model Image {
+  id        String      @id @default(uuid())
+  name      String
+  imageData Bytes    
+  mimeType  String
+  createdAt DateTime @default(now())
+  
+  @@map("images")
+}

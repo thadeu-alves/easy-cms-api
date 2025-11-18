@@ -9,14 +9,27 @@ import {
 import fastifySwagger from "@fastify/swagger";
 import fastifySwaggerUi from "@fastify/swagger-ui";
 import fastifyCors from "@fastify/cors";
+import multipart from "@fastify/multipart";
+import Medias from "./routes/medias";
 
 const app = Fastify({
     logger: true,
 }).withTypeProvider<ZodTypeProvider>();
 
+app.register(multipart, {
+    limits: {
+        fileSize: 10 * 1024 * 1024,
+    },
+});
+
 app.register(fastifyCors, {
     origin: (origin, cb) => {
-        const hostname = new URL(origin || "").hostname;
+        if (!origin) {
+            cb(null, true);
+            return;
+        }
+
+        const hostname = new URL(origin).hostname;
 
         console.log("Hostname call: ", hostname);
 
@@ -50,6 +63,7 @@ app.register(fastifySwaggerUi, {
 });
 
 app.register(Projects);
+app.register(Medias);
 
 export default async (req: any, res: any) => {
     try {
