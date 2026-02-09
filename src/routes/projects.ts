@@ -1,11 +1,12 @@
 import { FastifyInstance } from "fastify";
-import { object, z } from "zod";
-import { prisma } from "../../lib/prisma";
-import { InputJsonObject } from "@prisma/client/runtime/library";
+import { z } from "zod";
+import { ProjectSchema } from "../types/project";
 import {
-    ProjectProps,
-    ProjectSchema,
-} from "../types/project";
+    handleCreateProject,
+    handleGetAllProjects,
+    handleGetProjectById,
+    handleSetProjectFields,
+} from "../controllers/projects";
 
 export default async function Projects(
     app: FastifyInstance,
@@ -24,25 +25,7 @@ export default async function Projects(
                 },
             },
         },
-        async (request, reply) => {
-            try {
-                const data =
-                    await prisma.project.findMany();
-
-                return reply.send({ data });
-            } catch (err) {
-                console.log(err);
-                if (err instanceof Error) {
-                    return reply.status(400).send({
-                        message: err.message,
-                    });
-                }
-
-                return reply.status(500).send({
-                    message: "Internal Server Error",
-                });
-            }
-        },
+        handleGetAllProjects,
     );
 
     app.get(
@@ -62,38 +45,7 @@ export default async function Projects(
                 },
             },
         },
-        async (request, reply) => {
-            try {
-                const { id } = request.params as {
-                    id: string;
-                };
-
-                const data = await prisma.project.findFirst(
-                    {
-                        where: {
-                            id,
-                        },
-                    },
-                );
-
-                if (!data) {
-                    throw new Error("Project not found");
-                }
-
-                return reply.send({ data });
-            } catch (err) {
-                console.log(err);
-                if (err instanceof Error) {
-                    return reply.status(400).send({
-                        message: err.message,
-                    });
-                }
-
-                return reply.status(500).send({
-                    message: "Internal Server Error",
-                });
-            }
-        },
+        handleGetProjectById,
     );
 
     app.post(
@@ -111,49 +63,7 @@ export default async function Projects(
                 },
             },
         },
-        async (request, reply) => {
-            try {
-                const {
-                    name,
-                    slug,
-                    title,
-                    description,
-                    featuredImage,
-                    fields,
-                } = request.body as ProjectProps;
-
-                const data = await prisma.project.create({
-                    data: {
-                        name,
-                        slug,
-                        title: title || null,
-                        description: description || null,
-                        featuredImage:
-                            featuredImage || null,
-                        fields: fields || {},
-                    },
-                });
-
-                if (!data) {
-                    throw new Error(
-                        "Impossible to create Project",
-                    );
-                }
-
-                return reply.send({ data });
-            } catch (err) {
-                console.log(err);
-                if (err instanceof Error) {
-                    return reply.status(400).send({
-                        message: err.message,
-                    });
-                }
-
-                return reply.status(500).send({
-                    message: "Internal Server Error",
-                });
-            }
-        },
+        handleCreateProject,
     );
 
     app.post(
@@ -176,54 +86,6 @@ export default async function Projects(
                 },
             },
         },
-        async (request, reply) => {
-            try {
-                const { id } = request.params as {
-                    id: string;
-                };
-                const { fields } = request.body as {
-                    fields: InputJsonObject;
-                };
-
-                if (!fields) {
-                    throw new Error("Missing fields");
-                }
-
-                const data = await prisma.project.findFirst(
-                    {
-                        where: {
-                            id,
-                        },
-                    },
-                );
-
-                if (!data) {
-                    throw new Error("Project not found");
-                }
-
-                const updatedData =
-                    await prisma.project.update({
-                        where: {
-                            id,
-                        },
-                        data: {
-                            fields,
-                        },
-                    });
-
-                return reply.send({ data: updatedData });
-            } catch (err) {
-                console.log(err);
-                if (err instanceof Error) {
-                    return reply.status(400).send({
-                        message: err.message,
-                    });
-                }
-
-                return reply.status(500).send({
-                    message: "Internal Server Error",
-                });
-            }
-        },
+        handleSetProjectFields,
     );
 }
